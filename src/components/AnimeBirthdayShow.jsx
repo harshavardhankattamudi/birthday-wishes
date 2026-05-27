@@ -320,7 +320,6 @@ export default function AnimeBirthdayShow() {
   const [gameState, setGameState] = useState("intro"); // intro, playing, reveal
   const [cardOpened, setCardOpened] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [maxStepReached, setMaxStepReached] = useState(1);
   
   // Customization states
   const [candlesBlown, setCandlesBlown] = useState([false, false, false]);
@@ -561,7 +560,6 @@ export default function AnimeBirthdayShow() {
             onComplete: () => {
               triggerNormalTransition("reveal", () => {
                 setShowConfetti(true);
-                setMaxStepReached((prev) => Math.max(prev, 3));
               });
             }
           });
@@ -570,7 +568,6 @@ export default function AnimeBirthdayShow() {
     } else {
       triggerNormalTransition("reveal", () => {
         setShowConfetti(true);
-        setMaxStepReached((prev) => Math.max(prev, 3));
       });
     }
   };
@@ -680,9 +677,7 @@ export default function AnimeBirthdayShow() {
   };
 
   const handleNavigateToWanted = () => {
-    triggerNormalTransition("wanted", () => {
-      setMaxStepReached((prev) => Math.max(prev, 4));
-    });
+    triggerNormalTransition("wanted");
   };
 
   const startShow = () => {
@@ -695,15 +690,11 @@ export default function AnimeBirthdayShow() {
         duration: 0.4,
         ease: "power2.inOut",
         onComplete: () => {
-          triggerNormalTransition("playing", () => {
-            setMaxStepReached((prev) => Math.max(prev, 2));
-          });
+          triggerNormalTransition("playing");
         }
       });
     } else {
-      triggerNormalTransition("playing", () => {
-        setMaxStepReached((prev) => Math.max(prev, 2));
-      });
+      triggerNormalTransition("playing");
     }
   };
 
@@ -799,37 +790,28 @@ export default function AnimeBirthdayShow() {
       </div>
 
       {/* Grand Line Navigation Timeline Map */}
-      <div className="absolute top-4 left-0 w-full flex justify-center z-50 px-4">
-        <div className="flex items-center gap-1 sm:gap-3 glass-panel px-4 py-2 rounded-full border-yellow-500/20 shadow-lg text-[9px] sm:text-xs font-black uppercase tracking-widest text-yellow-100">
+      <div className="absolute top-3 left-0 w-full flex justify-center z-50 px-4">
+        <div className="flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 rounded-full border border-yellow-500/10 shadow-md text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-yellow-100 bg-black/40 backdrop-blur-sm">
           {TIMELINE_STEPS.map((step, idx) => {
-            const stepNum = idx + 1;
             const isActive = gameState === step.id;
-            const isUnlocked = stepNum <= maxStepReached;
             
             return (
               <div key={step.id} className="flex items-center">
                 {idx > 0 && (
-                  <div className={`w-4 sm:w-10 h-[2px] border-t-2 border-dashed mx-1 sm:mx-2 ${
-                    stepNum <= maxStepReached ? "border-yellow-400/60" : "border-gray-800"
-                  }`} />
+                  <div className="w-3 sm:w-6 h-[2px] border-t border-dashed mx-1 sm:mx-1.5 border-yellow-500/20" />
                 )}
                 <button
                   onClick={() => {
-                    if (isUnlocked) {
-                      triggerNormalTransition(step.id);
-                    }
+                    triggerNormalTransition(step.id);
                   }}
-                  disabled={!isUnlocked}
                   className={`flex items-center gap-1 transition-all duration-300 ${
                     isActive 
-                      ? "text-yellow-400 scale-105" 
-                      : isUnlocked 
-                        ? "text-yellow-200/50 hover:text-yellow-200 cursor-pointer" 
-                        : "text-gray-600 cursor-not-allowed"
+                      ? "text-yellow-400 scale-105 font-extrabold" 
+                      : "text-yellow-200/50 hover:text-yellow-200 cursor-pointer"
                   }`}
                 >
                   <span className="text-xs sm:text-sm">
-                    {isActive ? "⛵" : isUnlocked ? "⚓" : "🔒"}
+                    {isActive ? "⛵" : "⚓"}
                   </span>
                   <span className="hidden xs:inline">{step.label}</span>
                 </button>
@@ -920,7 +902,7 @@ export default function AnimeBirthdayShow() {
 
       {/* --- BIRTHDAY REVEAL SCREEN (STATE: REVEAL) --- */}
       {gameState === "reveal" && (
-        <div className="absolute inset-0 flex flex-col items-center justify-start sm:justify-center p-4 sm:p-6 z-20 overflow-y-auto custom-scrollbar py-16">
+        <div className="absolute inset-0 flex flex-col items-center justify-start sm:justify-center p-4 sm:p-6 z-20 overflow-y-auto custom-scrollbar pt-24 pb-16">
           
           {/* Confetti Rain Canvas */}
           <CanvasConfetti active={showConfetti} triggerFireworks={wishMade} />
@@ -1171,7 +1153,7 @@ export default function AnimeBirthdayShow() {
 
       {/* --- NAKAMA WANTED POSTER SCREEN (STATE: WANTED) --- */}
       {gameState === "wanted" && (
-        <div className="absolute inset-0 flex flex-col items-center justify-start sm:justify-center p-4 sm:p-6 z-20 overflow-y-auto custom-scrollbar py-16">
+        <div className="absolute inset-0 flex flex-col items-center justify-start sm:justify-center p-4 sm:p-6 z-20 overflow-y-auto custom-scrollbar pt-24 pb-16">
           {/* Confetti Rain & Fireworks Canvas */}
           <CanvasConfetti active={showConfetti} triggerFireworks={true} />
 
