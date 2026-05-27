@@ -5,6 +5,7 @@ import gsap from "gsap";
 import luffyCabin from "../assets/images/backgrounds/luffy_cabin.png";
 import luffyBirthday from "../assets/images/backgrounds/luffy_birthday.png";
 import luffyCelebration from "../assets/images/backgrounds/luffy_celebration.jpg";
+import jahnaviWanted from "../assets/images/backgrounds/jahnavi_wanted.jpg";
 import effects from "../assets/images/effects/effects.png";
 
 // Custom High-Performance Canvas Confetti & Fireworks (React 19 Safe, dependency-free)
@@ -225,184 +226,67 @@ function createTapSparkle(x, y) {
   }
 }
 
-let globalAudioCtx = null;
+// Realistic smoke particle spawning on candle blowout
+function createBlowoutSmoke(x, y) {
+  const container = document.body;
+  const particleCount = 18;
+  for (let i = 0; i < particleCount; i++) {
+    const smoke = document.createElement("div");
+    smoke.className = "fixed rounded-full pointer-events-none z-50 bg-gray-400/35 filter blur-[3px]";
+    const size = 6 + Math.random() * 12;
+    smoke.style.width = `${size}px`;
+    smoke.style.height = `${size}px`;
+    smoke.style.left = `${x - size / 2}px`;
+    smoke.style.top = `${y - size / 2}px`;
+    container.appendChild(smoke);
 
-function getAudioContext() {
-  if (!globalAudioCtx) {
-    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    if (AudioContextClass) {
-      globalAudioCtx = new AudioContextClass();
-    }
-  }
-  if (globalAudioCtx && globalAudioCtx.state === "suspended") {
-    globalAudioCtx.resume().catch(() => {});
-  }
-  return globalAudioCtx;
-}
-
-// Audio synthesizer player (Web Audio API)
-function playProceduralSFX(type, isMuted) {
-  if (isMuted && type !== "click") return;
-  try {
-    const ctx = getAudioContext();
-    if (!ctx) return;
-    const now = ctx.currentTime;
-
-    if (type === "click") {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.frequency.setValueAtTime(587.33, now); // D5
-      osc.frequency.exponentialRampToValueAtTime(880, now + 0.08);
-      gain.gain.setValueAtTime(0.06, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(now);
-      osc.stop(now + 0.12);
-    } else if (type === "slash") {
-      // Shing sound: high frequency metal ring + white noise sweep
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(1400, now);
-      osc.frequency.exponentialRampToValueAtTime(320, now + 0.28);
-      
-      gain.gain.setValueAtTime(0.25, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-      
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(now);
-      osc.stop(now + 0.3);
-    } else if (type === "envelope") {
-      const osc1 = ctx.createOscillator();
-      const osc2 = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc1.frequency.setValueAtTime(880, now);
-      osc1.frequency.exponentialRampToValueAtTime(1760, now + 0.6);
-      osc2.frequency.setValueAtTime(440, now);
-      osc2.frequency.exponentialRampToValueAtTime(1320, now + 0.6);
-      gain.gain.setValueAtTime(0.12, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
-      osc1.connect(gain);
-      osc2.connect(gain);
-      gain.connect(ctx.destination);
-      osc1.start(now);
-      osc2.start(now);
-      osc1.stop(now + 0.6);
-      osc2.stop(now + 0.6);
-    } else if (type === "extinguish") {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.frequency.setValueAtTime(987.77, now);
-      osc.frequency.exponentialRampToValueAtTime(1975.53, now + 0.18);
-      gain.gain.setValueAtTime(0.05, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(now);
-      osc.stop(now + 0.22);
-    } else if (type === "success") {
-      const notes = [523.25, 659.25, 783.99, 987.77, 1046.50, 1318.51];
-      notes.forEach((freq, idx) => {
-        const o = ctx.createOscillator();
-        const g = ctx.createGain();
-        o.frequency.setValueAtTime(freq, now + idx * 0.07);
-        g.gain.setValueAtTime(0.05, now + idx * 0.07);
-        g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.07 + 0.5);
-        o.connect(g);
-        g.connect(ctx.destination);
-        o.start(now + idx * 0.07);
-        o.stop(now + idx * 0.07 + 0.5);
-      });
-    } else if (type === "match") {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      const filter = ctx.createBiquadFilter();
-      
-      osc.type = "sawtooth";
-      osc.frequency.setValueAtTime(150, now);
-      osc.frequency.exponentialRampToValueAtTime(80, now + 0.15);
-      
-      filter.type = "bandpass";
-      filter.frequency.setValueAtTime(1000, now);
-      filter.frequency.exponentialRampToValueAtTime(100, now + 0.25);
-      
-      gain.gain.setValueAtTime(0.18, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
-      
-      osc.connect(filter);
-      filter.connect(gain);
-      gain.connect(ctx.destination);
-      
-      osc.start(now);
-      osc.stop(now + 0.25);
-    }
-  } catch {
-    console.warn("SFX synthesis failed");
+    const dx = (Math.random() - 0.5) * 35;
+    const dy = -40 - Math.random() * 60;
+    
+    gsap.to(smoke, {
+      x: dx,
+      y: dy,
+      scale: 2.2,
+      opacity: 0,
+      duration: 0.8 + Math.random() * 0.6,
+      ease: "sine.out",
+      onComplete: () => smoke.remove()
+    });
   }
 }
 
-// Luffy's laugh sound synth ("Shi-shi-shi-shi!")
-function playLuffyLaugh(isMuted) {
-  if (isMuted) return;
-  try {
-    const ctx = getAudioContext();
-    if (!ctx) return;
-    const now = ctx.currentTime;
-    
-    for (let i = 0; i < 5; i++) {
-      const time = now + i * 0.11;
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(750, time);
-      osc.frequency.exponentialRampToValueAtTime(1250, time + 0.065);
-      
-      gain.gain.setValueAtTime(0.06, time);
-      gain.gain.exponentialRampToValueAtTime(0.001, time + 0.085);
-      
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      
-      osc.start(time);
-      osc.stop(time + 0.09);
-    }
-  } catch {
-    console.warn("Luffy laugh synthesis failed");
-  }
-}
+// 3D card tilt handler using GSAP
+const handleMouseMoveTilt = (e, cardRef) => {
+  if (!cardRef.current) return;
+  const card = cardRef.current;
+  const rect = card.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  
+  const tiltX = (y / rect.height - 0.5) * -14; // Up to 14 degrees tilt
+  const tiltY = (x / rect.width - 0.5) * 14;
+  
+  gsap.to(card, {
+    rotateX: tiltX,
+    rotateY: tiltY,
+    transformPerspective: 800,
+    duration: 0.3,
+    ease: "power2.out",
+    overwrite: "auto"
+  });
+};
 
-// Gomu Gomu rubber friction stretch sweep
-function playRubberStretchSound(isMuted) {
-  if (isMuted) return;
-  try {
-    const ctx = getAudioContext();
-    if (!ctx) return;
-    const now = ctx.currentTime;
-    
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    
-    osc.type = "triangle";
-    osc.frequency.setValueAtTime(95, now);
-    osc.frequency.linearRampToValueAtTime(340, now + 0.22);
-    osc.frequency.linearRampToValueAtTime(190, now + 0.38);
-    
-    gain.gain.setValueAtTime(0.07, now);
-    gain.gain.linearRampToValueAtTime(0.07, now + 0.25);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-    
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    
-    osc.start(now);
-    osc.stop(now + 0.42);
-  } catch {
-    console.warn("Rubber stretch synthesis failed");
-  }
-}
+const handleMouseLeaveTilt = (cardRef) => {
+  if (!cardRef.current) return;
+  const card = cardRef.current;
+  gsap.to(card, {
+    rotateX: 0,
+    rotateY: 0,
+    duration: 0.5,
+    ease: "power2.out",
+    overwrite: "auto"
+  });
+};
 // Stable static speed lines configuration to satisfy React 19 Purity rules
 const STABLE_SPEED_LINES = [
   { id: 0, left: 12, top: -45, height: 250, delay: 0.02, duration: 0.15 },
@@ -436,10 +320,10 @@ export default function AnimeBirthdayShow() {
   const [candlesLit, setCandlesLit] = useState(true); // Candles start lit by default
   const [lanterns, setLanterns] = useState([]);
   
-  // Transition effects states
-  const [showSlashBeam, setShowSlashBeam] = useState(false);
-  const [showSpeedLines, setShowSpeedLines] = useState(false);
-
+  // Poster photo index state & options array
+  const [posterPhotoIdx, setPosterPhotoIdx] = useState(0);
+  const posterPhotos = [luffyBirthday];
+  
   // Gomu Gomu bubble states
   const [bubbleText, setBubbleText] = useState(null);
   const [bubblePos, setBubblePos] = useState({ x: 0, y: 0 });
@@ -448,11 +332,143 @@ export default function AnimeBirthdayShow() {
   const containerRef = useRef();
   const envelopeRef = useRef();
   const whiteFlashRef = useRef();
-  const slashRef = useRef();
   const cardRef = useRef();
+  const wantedPosterRef = useRef();
   const textTypedRef = useRef();
 
-  const [isMuted, setIsMuted] = useState(false);
+  // Wanted Poster Image Download functionality
+  const downloadWantedPoster = () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 800;
+    canvas.height = 1000;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // Load the preloaded image into the canvas
+    const img = new Image();
+    img.src = posterPhotos[posterPhotoIdx];
+    img.onload = () => {
+      // 1. Draw parchment vintage background (radial gradient)
+      const grad = ctx.createRadialGradient(400, 500, 0, 400, 500, 700);
+      grad.addColorStop(0, "#fbf4e6");
+      grad.addColorStop(1, "#eadaa6");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 800, 1000);
+
+      // 2. Draw border
+      ctx.lineWidth = 16;
+      ctx.strokeStyle = "#8b6b32";
+      ctx.strokeRect(30, 30, 740, 940);
+      
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = "#3e2723";
+      ctx.strokeRect(54, 54, 692, 892);
+
+      // 3. Draw text "WANTED"
+      ctx.fillStyle = "#1a0f0d";
+      ctx.font = "900 110px 'Cinzel', 'Times New Roman', serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.letterSpacing = "15px";
+      ctx.fillText("WANTED", 400, 120);
+
+      // 4. Draw subtitle "DEAD OR ALIVE"
+      ctx.font = "900 24px 'Playfair Display', Georgia, serif";
+      ctx.letterSpacing = "8px";
+      ctx.fillStyle = "#3e2723";
+      ctx.fillText("DEAD OR ALIVE", 400, 205);
+
+      // Draw line under subtitle
+      ctx.beginPath();
+      ctx.moveTo(100, 230);
+      ctx.lineTo(700, 230);
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = "#8b6b32";
+      ctx.stroke();
+
+      // 5. Draw photo frame
+      ctx.fillStyle = "#ecd29b";
+      ctx.fillRect(100, 260, 600, 480);
+      ctx.lineWidth = 8;
+      ctx.strokeStyle = "#5d4037";
+      ctx.strokeRect(100, 260, 600, 480);
+
+      // Draw the crew celebration image!
+      ctx.drawImage(img, 100, 260, 600, 480);
+
+      // Draw a dark banner at the bottom of the photo inside the poster
+      ctx.fillStyle = "rgba(26, 15, 13, 0.75)";
+      ctx.fillRect(100, 660, 600, 80);
+
+      // Draw HAPPY BIRTHDAY inside the photo banner
+      ctx.fillStyle = "#ffd54f"; // yellow gold
+      ctx.font = "900 32px 'Cinzel', serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.letterSpacing = "6px";
+      ctx.fillText("HAPPY BIRTHDAY JAHNAVI", 400, 700);
+
+      // 6. Draw Name "JAHNAVI"
+      ctx.fillStyle = "#1a0f0d";
+      ctx.font = "900 68px 'Cinzel', serif";
+      ctx.letterSpacing = "2px";
+      ctx.fillText("JAHNAVI", 400, 790);
+
+      // 7. Draw "REWARD"
+      ctx.fillStyle = "#5d4037";
+      ctx.font = "900 22px 'Playfair Display', serif";
+      ctx.letterSpacing = "4px";
+      ctx.fillText("REWARD", 400, 845);
+
+      // 8. Draw Bounty
+      ctx.fillStyle = "#b71c1c";
+      ctx.font = "900 56px 'Playfair Display', serif";
+      ctx.letterSpacing = "2px";
+      ctx.fillText("฿ 5,260,000,000-", 400, 905);
+
+      // 9. Draw Gold Rank
+      ctx.fillStyle = "#ff6f00";
+      ctx.font = "900 20px 'Cinzel', serif";
+      ctx.fillText("PIRATE QUEEN", 400, 955);
+
+      // 10. Download trigger
+      const link = document.createElement("a");
+      link.href = canvas.toDataURL("image/png");
+      link.download = "Wanted_Jahnavi_Bounty.png";
+      link.click();
+    };
+  };
+
+  const triggerNormalTransition = (targetState, onHalfwayComplete) => {
+    if (!whiteFlashRef.current) {
+      if (onHalfwayComplete) onHalfwayComplete();
+      setGameState(targetState);
+      return;
+    }
+
+    gsap.timeline()
+      .fromTo(whiteFlashRef.current,
+        { opacity: 0, pointerEvents: "none" },
+        { 
+          opacity: 1, 
+          pointerEvents: "auto",
+          duration: 0.45, 
+          ease: "power2.out" 
+        }
+      )
+      .add(() => {
+        if (onHalfwayComplete) onHalfwayComplete();
+        setGameState(targetState);
+      })
+      .to(whiteFlashRef.current,
+        { 
+          opacity: 0, 
+          pointerEvents: "none",
+          duration: 0.55, 
+          ease: "power2.inOut" 
+        }
+      );
+  };
 
   const handleContainerClick = (e) => {
     if (e.target.closest("button") || e.target.closest("svg") || e.target.closest("a")) return;
@@ -461,7 +477,7 @@ export default function AnimeBirthdayShow() {
 
   // Preload background images
   useEffect(() => {
-    const images = [luffyCabin, luffyBirthday, luffyCelebration, effects];
+    const images = [luffyCabin, luffyBirthday, luffyCelebration, jahnaviWanted, effects];
     images.forEach((src) => {
       const img = new Image();
       img.src = src;
@@ -499,7 +515,7 @@ export default function AnimeBirthdayShow() {
 
   useEffect(() => {
     if (cardOpened && textTypedRef.current) {
-      const fullText = `OI! Happy Birthday, Nakama! We've dropped anchor at a mysterious island on the Grand Line to throw you the ultimate pirate banquet. Sanji cooked up a legendary feast (and kept Luffy from eating it all before the party started!). Zoro raised a giant sake mug in your honor, Nami mapped out a path to the birthday treasure, and Usopp is telling tall tales of your heroic exploits to Chopper, who is listening with wide-eyed excitement. Robin found an ancient text wishing you a thousand years of adventure, Franky built a super fireworks display, Brook is playing Binks' Sake on his violin, and Jinbe says your pirate spirit is as strong as the sea itself. No matter how wild the seas get, you are a crucial part of our crew. Let's set sail for the ultimate treasure and make this year your greatest voyage yet. YOUR DREAMS ARE WITHIN REACH.`;
+      const fullText = `Happy 21st Birthday, Nakama! We've anchored at the Grand Line for a legendary pirate banquet. Sanji’s feast is served, Zoro raised a toast in your honor, and Nami mapped out the route to your next great treasure. Through wild seas and new horizons, your spirit is the anchor of this crew. Set sail for your dreams—your greatest voyage begins today!`;
       let currentIdx = 0;
       textTypedRef.current.innerHTML = "";
 
@@ -520,60 +536,36 @@ export default function AnimeBirthdayShow() {
     }
   }, [cardOpened]);
 
-  const handleEnvelopeClick = () => {
-    playProceduralSFX("slash", isMuted);
-    playLuffyLaugh(isMuted);
-    
-    setShowSlashBeam(true);
-    setShowSpeedLines(true);
-    
-    if (envelopeRef.current) {
-      gsap.fromTo(envelopeRef.current,
-        { x: -6 },
-        { 
-          x: 6, 
-          duration: 0.05, 
-          repeat: 6, 
-          yoyo: true, 
-          ease: "power1.inOut",
-          onComplete: () => {
-            gsap.to(envelopeRef.current, {
-              scale: 2.3,
-              opacity: 0,
-              duration: 0.22,
-              ease: "power2.in"
-            });
-          }
-        }
-      );
-    }
 
-    setTimeout(() => {
-      if (whiteFlashRef.current) {
-        gsap.fromTo(whiteFlashRef.current,
-          { opacity: 0 },
-          { 
-            opacity: 1, 
-            duration: 0.16,
+
+  const handleEnvelopeClick = () => {
+    if (envelopeRef.current) {
+      gsap.to(envelopeRef.current, {
+        scale: 0.9,
+        duration: 0.15,
+        ease: "power2.out",
+        onComplete: () => {
+          gsap.to(envelopeRef.current, {
+            scale: 1.6,
+            opacity: 0,
+            duration: 0.25,
+            ease: "power2.in",
             onComplete: () => {
-              setGameState("reveal");
-              setShowConfetti(true);
-              setShowSlashBeam(false);
-              setShowSpeedLines(false);
-              
-              gsap.to(whiteFlashRef.current, {
-                opacity: 0,
-                duration: 0.45
+              triggerNormalTransition("reveal", () => {
+                setShowConfetti(true);
               });
             }
-          }
-        );
-      }
-    }, 280);
+          });
+        }
+      });
+    } else {
+      triggerNormalTransition("reveal", () => {
+        setShowConfetti(true);
+      });
+    }
   };
 
   const handleLightCandles = () => {
-    playProceduralSFX("match", isMuted);
     setCandlesLit(true);
     setCandlesBlown([false, false, false]);
     
@@ -591,21 +583,47 @@ export default function AnimeBirthdayShow() {
   };
 
   const handleBlowOutAllCandles = () => {
-    playProceduralSFX("extinguish", isMuted);
-    
     const candleElements = document.querySelectorAll(".birthday-candle");
+    const cakeBase = document.querySelector(".cake-base");
+    
+    setCandlesBlown([true, true, true]);
+    
     if (candleElements && candleElements.length > 0) {
-      candleElements.forEach((el) => {
+      candleElements.forEach((el, i) => {
         const rect = el.getBoundingClientRect();
         const x = rect.left + rect.width / 2;
         const y = rect.top + rect.height / 2;
         createCandleSparks(x, y);
+        createBlowoutSmoke(x, y); // Spawn realistic smoke particles
+
+        // Splash out candles
+        const xDir = i === 0 ? -120 : i === 1 ? 0 : 120;
+        const yDir = i === 1 ? -160 : -100;
+        const rot = i === 0 ? -360 : i === 1 ? 180 : 360;
+
+        gsap.to(el, {
+          x: xDir,
+          y: yDir,
+          rotation: rot,
+          scale: 0.1,
+          opacity: 0,
+          duration: 0.85,
+          ease: "power2.out"
+        });
+      });
+    }
+
+    if (cakeBase) {
+      gsap.to(cakeBase, {
+        y: 180,
+        rotation: 30,
+        scale: 0.1,
+        opacity: 0,
+        duration: 0.85,
+        ease: "power2.in"
       });
     }
     
-    setCandlesBlown([true, true, true]);
-    setWishMade(true);
-    playProceduralSFX("success", isMuted);
     createSuccessExplosion();
 
     // Trigger powerful screen shake for premium game-feel
@@ -626,55 +644,54 @@ export default function AnimeBirthdayShow() {
         }
       );
     }
+
+    // Trigger transition after the splash out animation completes
+    setTimeout(() => {
+      triggerNormalTransition("reveal", () => {
+        setWishMade(true);
+      });
+    }, 900);
+  };
+
+  const handleResetCandles = () => {
+    setCandlesBlown([false, false, false]);
+    setCandlesLit(true);
+    setWishMade(false);
+
+    // Clean up GSAP inline styles so they return to their default positions
+    const candleElements = document.querySelectorAll(".birthday-candle");
+    const cakeBase = document.querySelector(".cake-base");
+    if (candleElements && candleElements.length > 0) {
+      gsap.set(candleElements, { clearProps: "all" });
+    }
+    if (cakeBase) {
+      gsap.set(cakeBase, { clearProps: "all" });
+    }
   };
 
   const handleNavigateToWanted = () => {
-    playProceduralSFX("envelope", isMuted);
-    if (whiteFlashRef.current) {
-      gsap.fromTo(whiteFlashRef.current,
-        { opacity: 0 },
-        { 
-          opacity: 1, 
-          duration: 0.18, 
-          yoyo: true, 
-          repeat: 1,
-          onStart: () => {
-            setGameState("wanted");
-          }
-        }
-      );
-    } else {
-      setGameState("wanted");
-    }
+    triggerNormalTransition("wanted");
   };
 
   const startShow = () => {
-    playProceduralSFX("slash", isMuted);
-    setShowSpeedLines(true);
-
     const card = document.querySelector(".intro-card-panel");
     if (card) {
       gsap.to(card, {
-        scale: 0.7,
+        scale: 0.8,
         opacity: 0,
-        y: 65,
-        duration: 0.45,
+        y: 40,
+        duration: 0.4,
         ease: "power2.inOut",
         onComplete: () => {
-          setGameState("playing");
-          setShowSpeedLines(false);
+          triggerNormalTransition("playing");
         }
       });
     } else {
-      setGameState("playing");
-      setShowSpeedLines(false);
+      triggerNormalTransition("playing");
     }
-
   };
 
   const handleGomuClick = (e) => {
-    playRubberStretchSound(isMuted);
-    
     // Position bubble at cursor
     setBubbleText("GOMU GOMU NO...");
     setBubblePos({ x: e.clientX, y: e.clientY });
@@ -693,11 +710,6 @@ export default function AnimeBirthdayShow() {
       setBubbleText(null);
     }, 950);
   };
-
-  const toggleMute = () => {
-    setIsMuted(!isMuted);
-  };
-
   return (
     <div
       ref={containerRef}
@@ -737,32 +749,24 @@ export default function AnimeBirthdayShow() {
             zIndex: (gameState === "reveal" && wishMade) ? 4 : 1
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/75 pointer-events-none z-10" />
         <div 
-          className="absolute inset-0 pointer-events-none animate-pulse z-10" 
+          className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/80 pointer-events-none transition-opacity duration-300"
           style={{
-            background: "radial-gradient(circle at center, transparent 35%, rgba(0,0,0,0.85) 100%)"
+            zIndex: 10,
+            opacity: wishMade ? 0.35 : 1
+          }}
+        />
+        <div 
+          className="absolute inset-0 pointer-events-none animate-pulse transition-opacity duration-300" 
+          style={{
+            background: "radial-gradient(circle at center, transparent 35%, rgba(0,0,0,0.85) 100%)",
+            zIndex: 10,
+            opacity: wishMade ? 0.35 : 1
           }}
         />
       </div>
 
-      {/* Audio Controller */}
-      {gameState !== "intro" && (
-        <button
-          onClick={toggleMute}
-          className="absolute top-6 right-6 z-50 p-3 rounded-full glass-panel-light text-white/80 hover:text-yellow-400 hover:scale-105 active:scale-95 transition-all duration-300 shadow-xl cursor-pointer"
-        >
-          {isMuted ? (
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="2 2 20 20" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 9.75 19.5 12m0 0 2.25 2.25M19.5 12l2.25-2.25M19.5 12l-2.25 2.25m-10.5-6 4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z" />
-            </svg>
-          ) : (
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="2 2 20 20" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19.114 5.636a9 9 0 0 1 0 12.728M16.463 8.288a5.25 5.25 0 0 1 0 7.424M6.75 8.25l4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z" />
-            </svg>
-          )}
-        </button>
-      )}
+
 
       {/* --- PRELOADER INTRO SCREEN (STATE: INTRO) --- */}
       {gameState === "intro" && (
@@ -801,6 +805,8 @@ export default function AnimeBirthdayShow() {
             <div
               ref={envelopeRef}
               onClick={handleEnvelopeClick}
+              onMouseMove={(e) => handleMouseMoveTilt(e, envelopeRef)}
+              onMouseLeave={() => handleMouseLeaveTilt(envelopeRef)}
               className="w-48 h-32 bg-gradient-to-tr from-amber-600 via-yellow-400 to-amber-300 border-4 border-double border-yellow-200 rounded-xl flex flex-col items-center justify-center cursor-pointer shadow-[0_0_50px_rgba(234,179,8,0.7)] group hover:scale-105 active:scale-95 transition-transform"
               style={{
                 animation: "float 4s ease-in-out infinite"
@@ -817,53 +823,17 @@ export default function AnimeBirthdayShow() {
             className="w-full max-w-2xl mx-auto vn-textbox rounded-2xl p-5 relative border-l-4 border-yellow-400 text-center"
           >
             <p className="text-sm md:text-base text-yellow-100 font-medium tracking-wide leading-relaxed">
-              Luffy left a mysterious wax-sealed letter on your desk. Click the seal to open it!
+              Luffy left a mysterious wax-sealed letter on your desk. Tap the wax seal and break it to read the message!
             </p>
           </div>
         </div>
       )}
 
-      {/* Slash sweep mask */}
-      <div className="absolute inset-0 flex justify-center items-center pointer-events-none z-30 overflow-hidden">
-        <img
-          ref={slashRef}
-          src={effects}
-          className="w-full h-full object-contain mix-blend-screen opacity-0"
-          alt="Slash Sweep"
-        />
-      </div>
-
-      {/* Screen flash layer */}
+      {/* Screen flash/fade transition layer */}
       <div
         ref={whiteFlashRef}
-        className="absolute inset-0 bg-white pointer-events-none opacity-0 z-40"
+        className="absolute inset-0 bg-[#040201] pointer-events-none opacity-0 z-50"
       />
-
-      {/* Speed lines Visual Effect */}
-      {showSpeedLines && (
-        <div className="absolute inset-0 pointer-events-none z-45 overflow-hidden">
-          {STABLE_SPEED_LINES.map((line) => (
-            <div
-              key={line.id}
-              className="speed-line"
-              style={{
-                left: `${line.left}%`,
-                top: `${line.top}px`,
-                height: `${line.height}px`,
-                animationDelay: `${line.delay}s`,
-                animationDuration: `${line.duration}s`
-              }}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Red Slash Cut Visual Beam */}
-      {showSlashBeam && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
-          <div className="w-[160%] h-3 bg-red-500 shadow-[0_0_20px_#ef4444,0_0_40px_#ef4444] rotate-[-25deg] scale-x-0 animate-slash-beam" />
-        </div>
-      )}
 
       {/* Manga Stretch Text Bubble */}
       {bubbleText && (
@@ -915,198 +885,213 @@ export default function AnimeBirthdayShow() {
             </h2>
           </div>
 
-          {/* Centered Scroll Container */}
+          {/* Centered Scroll/Celebration Container */}
           <div
             ref={cardRef}
+            onMouseMove={(e) => handleMouseMoveTilt(e, cardRef)}
+            onMouseLeave={() => handleMouseLeaveTilt(cardRef)}
             className="z-20 w-full max-w-lg flex flex-col gap-6"
           >
-            <div className="pirate-scroll flex flex-col gap-4">
-              <div className="scroll-handle-top" />
-              
-              <div className="border-b border-brown-900/10 pb-3 flex items-center justify-between mt-2">
-                <span className="text-xs font-extrabold uppercase tracking-widest text-brown-800">
-                  GRAND LINE LOG: CREWMATE
-                </span>
-                {wishMade && (
-                  <span className="nakama-badge text-[9px] font-black px-2.5 py-0.5 rounded-full text-amber-950 uppercase tracking-widest animate-pulse">
-                    Nakama Joined!
-                  </span>
-                )}
-              </div>
+            {wishMade ? (
+              /* Dedicated Celebration Photo Card */
+              <div className="glass-panel p-4 sm:p-6 rounded-3xl border-yellow-500/25 shadow-2xl flex flex-col items-center gap-4 sm:gap-6 text-center relative overflow-hidden animate-float">
+                <div className="absolute -top-12 -left-12 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
 
-              {!cardOpened ? (
-                <div
-                  className="flex flex-col items-center justify-center py-8 cursor-pointer group"
-                  onClick={() => setCardOpened(true)}
-                >
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-500 to-amber-600 flex items-center justify-center shadow-lg group-hover:scale-110 active:scale-95 transition-all duration-300 glow-box-yellow animate-float">
-                    <svg className="w-8 h-8 text-amber-950" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-18v18m-9-9h18M12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z" />
-                    </svg>
+                <div className="nakama-badge text-[10px] font-black px-3.5 py-1 rounded-full text-amber-950 uppercase tracking-widest animate-pulse border border-yellow-400/35 shadow-md">
+                  Nakama Joined! ☠
+                </div>
+
+                {/* Main Premium Photo (Responsive max-height constraints to fit viewport) */}
+                <div className="w-full max-h-[170px] sm:max-h-[260px] aspect-[4/3] rounded-2xl overflow-hidden border-4 border-amber-950/80 shadow-[0_12px_28px_rgba(0,0,0,0.55)] transform hover:scale-[1.02] transition-transform duration-300 relative group">
+                  <img
+                    src={luffyCelebration}
+                    className="w-full h-full object-cover"
+                    alt="Luffy celebrating with you!"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                  <div className="absolute bottom-0 left-0 right-0 bg-[#1a0f0d]/80 py-1.5 sm:py-2 text-center border-t border-[#8b6b32]/40 pointer-events-none">
+                    <span className="text-[10px] sm:text-xs font-black tracking-widest text-[#ffd54f] uppercase drop-shadow">
+                      ★ HAPPY BIRTHDAY JANU ★
+                    </span>
                   </div>
-                  <h3 className="text-lg font-black mt-4 text-brown-950 group-hover:text-amber-800 transition-colors uppercase tracking-wider text-center">
-                    Read Birthday Message
+                </div>
+
+                <div>
+                  <h3 className="text-xl sm:text-2xl font-black text-yellow-100 uppercase tracking-wider mb-2">
+                    Feast of the Century!
                   </h3>
-                  <p className="text-xs text-brown-800 mt-1 text-center font-medium">
-                    Tap to unroll the pirate scroll card.
+                  <p className="text-gray-300 text-xs sm:text-sm leading-relaxed max-w-sm mx-auto font-medium font-sans">
+                    Your wish has been received by the Captain! Sail through wild seas and set course for your dreams. Your greatest voyage begins now!
                   </p>
                 </div>
-              ) : (
-                <div className="flex flex-col gap-4">
-                  <div className="overflow-y-auto pr-2 custom-scrollbar" style={{ maxHeight: "170px" }}>
-                    <p
-                      ref={textTypedRef}
-                      className="handwritten text-brown-900 leading-relaxed tracking-wide min-h-[90px]"
-                    >
-                      {/* Javascript types the message here */}
+
+                <div className="w-full flex flex-col items-center gap-3">
+                  <button
+                    onClick={handleNavigateToWanted}
+                    className="w-full max-w-[320px] py-4 bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-500 hover:from-yellow-300 hover:to-amber-400 text-gray-950 font-black tracking-widest rounded-xl hover:scale-105 active:scale-95 transition-all shadow-[0_0_25px_rgba(245,158,11,0.65)] uppercase cursor-pointer text-xs md:text-sm animate-pulse flex items-center justify-center gap-2 border-2 border-yellow-200"
+                  >
+                    Claim Pirate Bounty
+                  </button>
+                  <p className="text-[9px] text-gray-400 uppercase tracking-widest font-extrabold font-sans">
+                    Claim your wanted bounty poster now
+                  </p>
+                </div>
+
+                <button
+                  onClick={handleResetCandles}
+                  className="px-3 py-1 rounded bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white active:scale-95 transition-all text-[10px] font-bold cursor-pointer mt-1"
+                >
+                  Reset & Blow Again
+                </button>
+              </div>
+            ) : (
+              /* Original Pirate Scroll Card */
+              <div className="pirate-scroll flex flex-col gap-4">
+                <div className="scroll-handle-top" />
+                
+                <div className="border-b border-brown-900/10 pb-3 flex items-center justify-between mt-2">
+                  <span className="text-xs font-extrabold uppercase tracking-widest text-brown-800">
+                    GRAND LINE LOG: CREWMATE
+                  </span>
+                </div>
+
+                {!cardOpened ? (
+                  <div
+                    className="flex flex-col items-center justify-center py-8 cursor-pointer group"
+                    onClick={() => setCardOpened(true)}
+                  >
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-500 to-amber-600 flex items-center justify-center shadow-lg group-hover:scale-110 active:scale-95 transition-all duration-300 glow-box-yellow animate-float">
+                      <svg className="w-10 h-10 text-amber-950 group-hover:rotate-45 transition-transform duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
+                        <circle cx="12" cy="12" r="2.5" stroke="currentColor" />
+                        <path d="M12 4.5l2 7.5h-4z" fill="currentColor" />
+                        <path d="M12 19.5l2-7.5h-4z" fill="rgba(0,0,0,0.4)" />
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-black mt-4 text-brown-950 group-hover:text-amber-800 transition-colors uppercase tracking-wider text-center">
+                      Read Birthday Message
+                    </h3>
+                    <p className="text-xs text-brown-800 mt-1 text-center font-medium font-sans">
+                      Click the compass to open the message.
                     </p>
                   </div>
+                ) : (
+                  <div className="flex flex-col gap-4">
+                    <div className="overflow-y-auto pr-2 custom-scrollbar" style={{ maxHeight: "170px" }}>
+                      <p
+                        ref={textTypedRef}
+                        className="handwritten text-brown-900 leading-relaxed tracking-wide min-h-[90px]"
+                      >
+                        {/* Javascript types the message here */}
+                      </p>
+                    </div>
 
-                  {/* Candle Blowing Interaction */}
-                  <div className="border-t border-brown-900/10 pt-3 flex flex-col items-center font-sans">
-                    {!wishMade ? (
-                      <>
-                        <p className="text-[10px] text-brown-800 mb-2.5 tracking-wider uppercase text-center font-bold">
-                          {candlesLit 
-                            ? "Click the button below to blow out all candles!" 
-                            : "Strike the match to light up the pirate candles!"}
-                        </p>
-                        
-                        <div className="relative flex justify-center items-end h-14 w-40 mb-1">
-                          <div className="absolute bottom-0 w-28 h-6 bg-gradient-to-t from-red-700 to-red-500 rounded-t-lg border-t-2 border-yellow-100/50 shadow-inner flex items-center justify-center">
-                            <span className="text-[9px] text-white/90 font-black tracking-widest uppercase">Make a Wish</span>
-                          </div>
-
-                          <div className="absolute bottom-4 w-20 flex justify-between px-2">
-                            {[0, 1, 2].map((i) => (
-                              <div
-                                key={i}
-                                className="birthday-candle relative w-3 h-7 flex flex-col items-center select-none"
-                              >
-                                {candlesLit && !candlesBlown[i] && (
-                                  <div
-                                    className="w-2.5 h-3.5 bg-gradient-to-t from-red-500 via-yellow-400 to-amber-300 rounded-full animate-pulse filter drop-shadow-[0_0_5px_rgba(251,191,36,0.95)] hover:scale-110 transition-transform"
-                                    style={{
-                                      animationDuration: `${0.35 + i * 0.12}s`,
-                                      transformOrigin: "bottom center"
-                                    }}
-                                  />
-                                )}
-                                <div className="w-[1px] h-1 bg-gray-600" />
-                                <div className={`w-1.5 h-3.5 rounded-sm ${i === 0 ? "bg-cyan-500" : i === 1 ? "bg-purple-500" : "bg-emerald-500"} shadow`} />
-                              </div>
-                            ))}
-                          </div>
+                    {/* Candle Blowing Interaction */}
+                    <div className="border-t border-brown-900/10 pt-3 flex flex-col items-center font-sans">
+                      <p className="text-[10px] text-brown-800 mb-2.5 tracking-wider uppercase text-center font-bold">
+                        {candlesLit 
+                          ? "Click the button below to blow out all candles!" 
+                          : "Strike the match to light up the pirate candles!"}
+                      </p>
+                      
+                      <div className="relative flex justify-center items-end h-14 w-40 mb-1">
+                        <div className="cake-base absolute bottom-0 w-28 h-6 bg-gradient-to-t from-red-700 to-red-500 rounded-t-lg border-t-2 border-yellow-100/50 shadow-inner flex items-center justify-center">
+                          <span className="text-[9px] text-white/90 font-black tracking-widest uppercase">Make a Wish</span>
                         </div>
 
-                        {!candlesLit ? (
-                          <button
-                            onClick={handleLightCandles}
-                            className="mt-2.5 px-5 py-1.5 bg-gradient-to-r from-red-700 via-amber-600 to-red-700 hover:from-red-600 hover:to-red-600 text-white text-[10px] font-black tracking-widest rounded-lg hover:scale-105 active:scale-95 transition-all shadow-[0_0_15px_rgba(185,28,28,0.4)] uppercase cursor-pointer"
-                          >
-                            LIGHT THE CANDLES
-                          </button>
-                        ) : (
-                          <button
-                            onClick={handleBlowOutAllCandles}
-            className="mt-2.5 px-5 py-1.5 bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 hover:from-amber-500 hover:to-amber-500 text-gray-950 text-[10px] font-black tracking-widest rounded-lg hover:scale-105 active:scale-95 transition-all shadow-[0_0_15px_rgba(234,179,8,0.4)] uppercase cursor-pointer animate-pulse"
-                          >
-                            BLOW OUT CANDLES
-                          </button>
-                        )}
-                      </>
-                    ) : (
-                      <div className="text-center py-1 w-full animate-float flex flex-col items-center">
-                        <h4 className="text-base font-black text-red-800 tracking-widest uppercase">
-                          YOUR WISH HAS BEEN SENT
-                        </h4>
-                        <p className="text-[13px] md:text-sm text-brown-900 mt-1.5 font-bold mb-3 tracking-wide px-2">
-                          May all your hopes and dreams become reality this year.
-                        </p>
-                        
-                        {/* Luffy celebrating photo revealed here at the end! */}
-                        <div className="w-full max-w-[340px] aspect-square rounded-2xl overflow-hidden border-4 border-amber-950/80 shadow-[0_12px_28px_rgba(0,0,0,0.5)] transform hover:scale-[1.03] transition-transform duration-300">
-                          <img src={luffyCelebration} className="w-full h-full object-cover" alt="Luffy celebrating with you!" />
+                        <div className="absolute bottom-4 w-20 flex justify-between px-2">
+                          {[0, 1, 2].map((i) => (
+                            <div
+                              key={i}
+                              className="birthday-candle relative w-3 h-7 flex flex-col items-center select-none"
+                            >
+                              {candlesLit && !candlesBlown[i] && (
+                                <div
+                                  className="w-2.5 h-3.5 bg-gradient-to-t from-red-500 via-yellow-400 to-amber-300 rounded-full animate-pulse filter drop-shadow-[0_0_5px_rgba(251,191,36,0.95)] hover:scale-110 transition-transform"
+                                  style={{
+                                    animationDuration: `${0.35 + i * 0.12}s`,
+                                    transformOrigin: "bottom center"
+                                  }}
+                                />
+                              )}
+                              <div className="w-[1px] h-1 bg-gray-600" />
+                              <div className={`w-1.5 h-3.5 rounded-sm ${i === 0 ? "bg-cyan-500" : i === 1 ? "bg-purple-500" : "bg-emerald-500"} shadow`} />
+                            </div>
+                          ))}
                         </div>
- 
-                        {/* Interactive Navigate Button */}
-                        <div className="mt-5 w-full flex flex-col items-center gap-1.5 z-20">
-                          <button
-                            onClick={handleNavigateToWanted}
-                            className="w-full max-w-[300px] py-3.5 bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-500 hover:from-yellow-300 hover:to-amber-400 text-gray-950 font-black tracking-widest rounded-xl hover:scale-105 active:scale-95 transition-all shadow-[0_0_25px_rgba(245,158,11,0.65)] uppercase cursor-pointer text-xs md:text-sm animate-pulse flex items-center justify-center gap-2 border-2 border-yellow-200"
-                          >
-                            REVEAL WANTED POSTER
-                          </button>
-                          <p className="text-[10px] text-brown-900 font-extrabold uppercase tracking-wider mt-1">
-                            Click above to claim your pirate bounty.
-                          </p>
-                        </div>
-
-                        <button
-                          onClick={() => {
-                            setCandlesBlown([false, false, false]);
-                            setCandlesLit(true);
-                            setWishMade(false);
-                          }}
-                          className="mt-3 px-2.5 py-0.5 rounded bg-brown-900/10 text-brown-800 hover:bg-brown-900/20 hover:text-brown-950 active:scale-95 transition-all text-[9px] font-bold cursor-pointer"
-                        >
-                          Reset Candles
-                        </button>
                       </div>
-                    )}
-                  </div>
 
-                  <div className="flex justify-end border-t border-brown-900/5 pt-2">
-                    <button
-                      onClick={() => setCardOpened(false)}
-                      className="px-3 py-1 text-[10px] font-bold text-brown-800 hover:text-brown-950 transition-colors cursor-pointer"
-                    >
-                      ← Close Letter
-                    </button>
-                  </div>
-                </div>
-              )}
+                      {!candlesLit ? (
+                        <button
+                          onClick={handleLightCandles}
+                          className="mt-2.5 px-5 py-1.5 bg-gradient-to-r from-red-700 via-amber-600 to-red-700 hover:from-red-600 hover:to-red-600 text-white text-[10px] font-black tracking-widest rounded-lg hover:scale-105 active:scale-95 transition-all shadow-[0_0_15px_rgba(185,28,28,0.4)] uppercase cursor-pointer"
+                        >
+                          LIGHT THE CANDLES
+                        </button>
+                      ) : (
+                        <button
+                          onClick={handleBlowOutAllCandles}
+                          className="mt-2.5 px-5 py-1.5 bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 hover:from-amber-500 hover:to-amber-500 text-gray-950 text-[10px] font-black tracking-widest rounded-lg hover:scale-105 active:scale-95 transition-all shadow-[0_0_15px_rgba(234,179,8,0.4)] uppercase cursor-pointer animate-pulse"
+                        >
+                          BLOW OUT CANDLES
+                        </button>
+                      )}
+                    </div>
 
-              <div className="scroll-handle-bottom" />
-            </div>
+                    <div className="flex justify-end border-t border-brown-900/5 pt-2">
+                      <button
+                        onClick={() => setCardOpened(false)}
+                        className="px-3 py-1 text-[10px] font-bold text-brown-800 hover:text-brown-950 transition-colors cursor-pointer"
+                      >
+                        ← Close Letter
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                <div className="scroll-handle-bottom" />
+              </div>
+            )}
 
             {/* Bottom Row Interactivity: Gomu Gomu fruit and Luffy Laugh button */}
-            <div className="flex items-center justify-between glass-panel p-4 rounded-2xl border-purple-500/20 shadow-lg">
-              <div className="flex items-center gap-3">
-                {/* Floating Gomu Gomu no Mi Fruit (SVG Vector) */}
-                <svg
-                  onClick={handleGomuClick}
-                  className="gomu-fruit w-12 h-12"
-                  viewBox="0 0 64 64"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <circle cx="32" cy="36" r="22" fill="#8b5cf6" />
-                  {/* Swirl patterns */}
-                  <path d="M22 26 C26 22, 28 32, 32 30 C36 28, 30 42, 36 44 C42 46, 44 32, 48 38" stroke="#4c1d95" strokeWidth="3.5" strokeLinecap="round" fill="none" />
-                  <path d="M16 36 C20 42, 28 38, 32 44" stroke="#4c1d95" strokeWidth="3" strokeLinecap="round" fill="none" />
-                  <path d="M40 24 C44 28, 48 24, 50 30" stroke="#4c1d95" strokeWidth="3" strokeLinecap="round" fill="none" />
-                  {/* Stalk */}
-                  <path d="M32 14 C32 14, 30 6, 26 8 C22 10, 24 16, 28 14" stroke="#10b981" strokeWidth="4" strokeLinecap="round" fill="none" />
-                </svg>
-                <div className="flex flex-col">
-                  <span className="text-[10px] uppercase font-black tracking-widest text-purple-300">Gomu Gomu Fruit</span>
-                  <span className="text-[9px] text-gray-400">Click to stretch scroll like rubber!</span>
+            {!wishMade && (
+              <div className="flex items-center justify-between glass-panel p-4 rounded-2xl border-purple-500/20 shadow-lg">
+                <div className="flex items-center gap-3">
+                  {/* Floating Gomu Gomu no Mi Fruit (SVG Vector) */}
+                  <svg
+                    onClick={handleGomuClick}
+                    className="gomu-fruit w-12 h-12"
+                    viewBox="0 0 64 64"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <circle cx="32" cy="36" r="22" fill="#8b5cf6" />
+                    {/* Swirl patterns */}
+                    <path d="M22 26 C26 22, 28 32, 32 30 C36 28, 30 42, 36 44 C42 46, 44 32, 48 38" stroke="#4c1d95" strokeWidth="3.5" strokeLinecap="round" fill="none" />
+                    <path d="M16 36 C20 42, 28 38, 32 44" stroke="#4c1d95" strokeWidth="3" strokeLinecap="round" fill="none" />
+                    <path d="M40 24 C44 28, 48 24, 50 30" stroke="#4c1d95" strokeWidth="3" strokeLinecap="round" fill="none" />
+                    {/* Stalk */}
+                    <path d="M32 14 C32 14, 30 6, 26 8 C22 10, 24 16, 28 14" stroke="#10b981" strokeWidth="4" strokeLinecap="round" fill="none" />
+                  </svg>
+                  <div className="flex flex-col">
+                    <span className="text-[10px] uppercase font-black tracking-widest text-purple-300">Gomu Gomu Fruit</span>
+                    <span className="text-[9px] text-gray-400">Click to stretch scroll like rubber!</span>
+                  </div>
                 </div>
-              </div>
 
-              {/* Luffy's Straw Hat Voice Button */}
-              <button
-                onClick={() => playLuffyLaugh(isMuted)}
-                className="flex flex-col items-center justify-center p-2.5 rounded-xl bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/30 hover:scale-105 active:scale-95 transition-all cursor-pointer shadow gap-1"
-                title="Crew's Laugh"
-              >
-                <svg className="w-5 h-5 text-yellow-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-18v18m-9-9h18M12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z" />
-                </svg>
-                <span className="text-[8px] font-black uppercase tracking-wider text-yellow-300 mt-1">Crew's Laugh</span>
-              </button>
-            </div>
+                {/* Gold Explosion Button */}
+                <button
+                  onClick={createSuccessExplosion}
+                  className="flex flex-col items-center justify-center p-2.5 rounded-xl bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/30 hover:scale-105 active:scale-95 transition-all cursor-pointer shadow gap-1"
+                  title="Shower Gold"
+                >
+                  <svg className="w-5 h-5 text-yellow-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                  </svg>
+                  <span className="text-[8px] font-black uppercase tracking-wider text-yellow-300 mt-1">Shower Gold</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -1141,23 +1126,29 @@ export default function AnimeBirthdayShow() {
           </div>
 
           {/* Wanted Poster Card */}
-          <div className="wanted-poster-card animate-float select-none relative z-20 w-full max-w-[310px] sm:max-w-[400px] border-8 sm:border-[12px]">
+          <div 
+            ref={wantedPosterRef}
+            onMouseMove={(e) => handleMouseMoveTilt(e, wantedPosterRef)}
+            onMouseLeave={() => handleMouseLeaveTilt(wantedPosterRef)}
+            className="wanted-poster-card animate-float select-none relative z-20 w-full max-w-[310px] sm:max-w-[400px] border-8 sm:border-[12px]"
+          >
             <div className="wanted-poster-title text-4xl sm:text-5xl">WANTED</div>
             <div className="wanted-poster-subtitle text-[10px] sm:text-xs">DEAD OR ALIVE</div>
 
-            {/* Photo frame inside wanted poster */}
+             {/* Photo frame inside wanted poster */}
             <div 
-              onClick={() => {
-                playProceduralSFX("success", isMuted);
-                createSuccessExplosion();
-              }}
-              className="wanted-photo-frame"
+              className="wanted-photo-frame relative pointer-events-none"
             >
               <img 
-                src={luffyCelebration} 
+                src={posterPhotos[posterPhotoIdx]} 
                 className="w-full h-full object-cover" 
                 alt="Crew Celebration" 
               />
+              <div className="absolute bottom-0 left-0 right-0 bg-[#1a0f0d]/80 py-1.5 sm:py-2 text-center border-t border-[#8b6b32]/40">
+                <span className="text-[10px] sm:text-xs font-black tracking-widest text-[#ffd54f] uppercase drop-shadow">
+                  ★ HAPPY BIRTHDAY NAKAMA ★
+                </span>
+              </div>
             </div>
 
             {/* Poster details */}
@@ -1167,20 +1158,28 @@ export default function AnimeBirthdayShow() {
               <span className="text-sm sm:text-xl">฿</span> 5,260,000,000-
             </div>
             <div className="wanted-rank-badge wanted-rank-gold mt-1.5 sm:mt-3 text-[10px] sm:text-xs">
-              PIRATE QUEEN
+               PIRATE QUEEN
             </div>
           </div>
 
-          {/* Navigation back */}
-          <button
-            onClick={() => {
-              playProceduralSFX("click", isMuted);
-              setGameState("reveal");
-            }}
-            className="mt-6 px-6 py-2 bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-400 hover:to-amber-500 text-gray-950 font-bold rounded-xl hover:scale-105 active:scale-95 transition-all shadow-lg uppercase tracking-wider z-20 cursor-pointer text-xs sm:text-sm"
-          >
-            ← Back to Letter
-          </button>
+          {/* Action buttons under poster */}
+          <div className="mt-6 flex flex-row gap-4 items-center z-20">
+            <button
+              onClick={() => triggerNormalTransition("reveal")}
+              className="px-5 py-2 bg-brown-900/10 hover:bg-brown-900/20 text-yellow-100/80 hover:text-white font-bold rounded-xl active:scale-95 transition-all text-xs sm:text-sm cursor-pointer"
+            >
+              ← Back to Letter
+            </button>
+            <button
+              onClick={downloadWantedPoster}
+              className="px-6 py-2 bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-500 hover:from-yellow-300 hover:to-amber-400 text-gray-950 font-extrabold rounded-xl hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(245,158,11,0.4)] uppercase tracking-wider cursor-pointer text-xs sm:text-sm flex items-center gap-1.5 border border-yellow-300/40"
+            >
+              <svg className="w-4 h-4 text-gray-950" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+              </svg>
+              Save Poster
+            </button>
+          </div>
         </div>
       )}
 
