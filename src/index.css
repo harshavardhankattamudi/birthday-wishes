@@ -38,8 +38,8 @@ body,
 .handwritten {
   font-family: 'Playfair Display', serif;
   font-style: italic;
-  font-size: 1.15rem;
-  line-height: 1.6;
+  font-size: 0.95rem;
+  line-height: 1.5;
   color: #27140f; /* Dark antique brown ink for high visibility on parchment */
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -47,7 +47,7 @@ body,
 
 @media (min-width: 640px) {
   .handwritten {
-    font-size: 1.4rem;
+    font-size: 1.15rem;
   }
 }
 
