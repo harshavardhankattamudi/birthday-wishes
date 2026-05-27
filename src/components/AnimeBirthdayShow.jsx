@@ -855,7 +855,7 @@ export default function AnimeBirthdayShow() {
 
       {/* --- BIRTHDAY REVEAL SCREEN (STATE: REVEAL) --- */}
       {gameState === "reveal" && (
-        <div className="absolute inset-0 flex flex-col items-center justify-start sm:justify-center p-4 sm:p-6 z-20 overflow-y-auto custom-scrollbar pt-28 pb-12">
+        <div className="absolute inset-0 flex flex-col items-center justify-start sm:justify-center p-4 sm:p-6 z-20 overflow-y-auto custom-scrollbar pt-40 sm:pt-24 pb-12">
           
           {/* Confetti Rain Canvas */}
           <CanvasConfetti active={showConfetti} triggerFireworks={wishMade} />
@@ -1106,7 +1106,7 @@ export default function AnimeBirthdayShow() {
 
       {/* --- NAKAMA WANTED POSTER SCREEN (STATE: WANTED) --- */}
       {gameState === "wanted" && (
-        <div className="absolute inset-0 flex flex-col items-center justify-start sm:justify-center p-4 sm:p-6 z-20 overflow-y-auto custom-scrollbar pt-28 pb-12">
+        <div className="absolute inset-0 flex flex-col items-center justify-start sm:justify-center p-4 sm:p-6 z-20 overflow-y-auto custom-scrollbar pt-40 sm:pt-24 pb-12">
           {/* Confetti Rain & Fireworks Canvas */}
           <CanvasConfetti active={showConfetti} triggerFireworks={true} />
 
