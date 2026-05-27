@@ -865,7 +865,7 @@ export default function AnimeBirthdayShow() {
 
       {/* --- BIRTHDAY REVEAL SCREEN (STATE: REVEAL) --- */}
       {gameState === "reveal" && (
-        <div className="absolute inset-0 flex flex-col items-center justify-start sm:justify-center p-4 sm:p-6 z-20 overflow-y-auto custom-scrollbar pt-20 pb-12">
+        <div className="absolute inset-0 flex flex-col items-center justify-start sm:justify-center p-4 sm:p-6 z-20 overflow-y-auto custom-scrollbar pt-28 pb-12">
           
           {/* Confetti Rain Canvas */}
           <CanvasConfetti active={showConfetti} triggerFireworks={wishMade} />
@@ -894,7 +894,7 @@ export default function AnimeBirthdayShow() {
           </div>
 
           {/* Header Title: HAPPY BIRTHDAY NAKAMA! */}
-          <div className="text-center mb-6 z-20 select-none animate-float" style={{ animationDuration: "5s" }}>
+          <div className="text-center mb-10 z-20 select-none animate-float" style={{ animationDuration: "5s" }}>
             <h1 className="splash-birthday-text text-4xl md:text-5xl font-black uppercase tracking-widest leading-none mb-2">
               HAPPY BIRTHDAY
             </h1>
@@ -1116,7 +1116,7 @@ export default function AnimeBirthdayShow() {
 
       {/* --- NAKAMA WANTED POSTER SCREEN (STATE: WANTED) --- */}
       {gameState === "wanted" && (
-        <div className="absolute inset-0 flex flex-col items-center justify-start sm:justify-center p-4 sm:p-6 z-20 overflow-y-auto custom-scrollbar pt-20 pb-12">
+        <div className="absolute inset-0 flex flex-col items-center justify-start sm:justify-center p-4 sm:p-6 z-20 overflow-y-auto custom-scrollbar pt-28 pb-12">
           {/* Confetti Rain & Fireworks Canvas */}
           <CanvasConfetti active={showConfetti} triggerFireworks={true} />
 
