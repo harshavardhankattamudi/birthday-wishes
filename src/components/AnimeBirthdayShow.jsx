@@ -397,17 +397,7 @@ export default function AnimeBirthdayShow() {
       // Draw the crew celebration image!
       ctx.drawImage(img, 100, 260, 600, 480);
 
-      // Draw a dark banner at the bottom of the photo inside the poster
-      ctx.fillStyle = "rgba(26, 15, 13, 0.75)";
-      ctx.fillRect(100, 660, 600, 80);
 
-      // Draw HAPPY BIRTHDAY inside the photo banner
-      ctx.fillStyle = "#ffd54f"; // yellow gold
-      ctx.font = "900 32px 'Cinzel', serif";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.letterSpacing = "6px";
-      ctx.fillText("HAPPY BIRTHDAY JAHNAVI", 400, 700);
 
       // 6. Draw Name "JAHNAVI"
       ctx.fillStyle = "#1a0f0d";
@@ -1162,11 +1152,7 @@ export default function AnimeBirthdayShow() {
                 className="w-full h-full object-cover" 
                 alt="Crew Celebration" 
               />
-              <div className="absolute bottom-0 left-0 right-0 bg-[#1a0f0d]/80 py-1.5 sm:py-2 text-center border-t border-[#8b6b32]/40">
-                <span className="text-[10px] sm:text-xs font-black tracking-widest text-[#ffd54f] uppercase drop-shadow">
-                  ★ HAPPY BIRTHDAY NAKAMA ★
-                </span>
-              </div>
+
             </div>
 
             {/* Poster details */}
