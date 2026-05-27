@@ -4,7 +4,7 @@ import gsap from "gsap";
 // One Piece / Luffy visual novel illustrations
 import luffyCabin from "../assets/images/backgrounds/luffy_cabin.png";
 import luffyBirthday from "../assets/images/backgrounds/luffy_birthday.png";
-import luffyCelebration from "../assets/images/backgrounds/luffy_celebration.jpg";
+import luffyCelebration from "../assets/images/backgrounds/luffy_celebration.png";
 import jahnaviWanted from "../assets/images/backgrounds/jahnavi_wanted.jpg";
 import effects from "../assets/images/effects/effects.png";
 
@@ -309,12 +309,6 @@ const STABLE_SPEED_LINES = [
   { id: 17, left: 50, top: -55, height: 400, delay: 0.12, duration: 0.18 }
 ];
 
-const TIMELINE_STEPS = [
-  { id: "intro", label: "Deck" },
-  { id: "playing", label: "Letter" },
-  { id: "reveal", label: "Party" },
-  { id: "wanted", label: "Bounty" }
-];
 
 export default function AnimeBirthdayShow() {
   const [gameState, setGameState] = useState("intro"); // intro, playing, reveal
@@ -789,37 +783,6 @@ export default function AnimeBirthdayShow() {
         </div>
       </div>
 
-      {/* Grand Line Navigation Timeline Map */}
-      <div className="absolute top-3 left-0 w-full flex justify-center z-50 px-4">
-        <div className="flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 rounded-full border border-yellow-500/10 shadow-md text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-yellow-100 bg-black/40 backdrop-blur-sm">
-          {TIMELINE_STEPS.map((step, idx) => {
-            const isActive = gameState === step.id;
-            
-            return (
-              <div key={step.id} className="flex items-center">
-                {idx > 0 && (
-                  <div className="w-3 sm:w-6 h-[2px] border-t border-dashed mx-1 sm:mx-1.5 border-yellow-500/20" />
-                )}
-                <button
-                  onClick={() => {
-                    triggerNormalTransition(step.id);
-                  }}
-                  className={`flex items-center gap-1 transition-all duration-300 ${
-                    isActive 
-                      ? "text-yellow-400 scale-105 font-extrabold" 
-                      : "text-yellow-200/50 hover:text-yellow-200 cursor-pointer"
-                  }`}
-                >
-                  <span className="text-xs sm:text-sm">
-                    {isActive ? "⛵" : "⚓"}
-                  </span>
-                  <span className="hidden xs:inline">{step.label}</span>
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      </div>
 
 
 
@@ -855,8 +818,8 @@ export default function AnimeBirthdayShow() {
 
       {/* --- ENVELOPE SELECTION (STATE: PLAYING) --- */}
       {gameState === "playing" && (
-        <div className="absolute inset-0 flex flex-col justify-between p-6 z-20">
-          <div className="flex-grow flex justify-center items-center">
+        <div className="absolute inset-0 flex flex-col justify-center items-center gap-6 p-4 z-20 overflow-y-auto">
+          <div className="flex-grow flex justify-center items-center max-h-[50vh]">
             <div
               ref={envelopeRef}
               onClick={handleEnvelopeClick}
@@ -875,9 +838,9 @@ export default function AnimeBirthdayShow() {
           </div>
 
           <div
-            className="w-full max-w-2xl mx-auto vn-textbox rounded-2xl p-5 relative border-l-4 border-yellow-400 text-center"
+            className="w-full max-w-xl vn-textbox rounded-2xl p-4 relative border-l-4 border-yellow-400 text-center animate-fade-in"
           >
-            <p className="text-sm md:text-base text-yellow-100 font-medium tracking-wide leading-relaxed">
+            <p className="text-xs sm:text-sm md:text-base text-yellow-100 font-medium tracking-wide leading-relaxed">
               Luffy left a mysterious wax-sealed letter on your desk. Tap the wax seal and break it to read the message!
             </p>
           </div>
@@ -902,7 +865,7 @@ export default function AnimeBirthdayShow() {
 
       {/* --- BIRTHDAY REVEAL SCREEN (STATE: REVEAL) --- */}
       {gameState === "reveal" && (
-        <div className="absolute inset-0 flex flex-col items-center justify-start sm:justify-center p-4 sm:p-6 z-20 overflow-y-auto custom-scrollbar pt-24 pb-16">
+        <div className="absolute inset-0 flex flex-col items-center justify-start sm:justify-center p-4 sm:p-6 z-20 overflow-y-auto custom-scrollbar pt-16 pb-12">
           
           {/* Confetti Rain Canvas */}
           <CanvasConfetti active={showConfetti} triggerFireworks={wishMade} />
@@ -957,7 +920,7 @@ export default function AnimeBirthdayShow() {
                 </div>
 
                 {/* Main Premium Photo (Responsive max-height constraints to fit viewport) */}
-                <div className="w-full max-w-[280px] sm:max-w-[340px] aspect-square rounded-2xl overflow-hidden border-4 border-amber-950/80 shadow-[0_12px_28px_rgba(0,0,0,0.55)] transform hover:scale-[1.02] transition-transform duration-300 relative group mx-auto">
+                <div className="w-full max-w-[200px] xs:max-w-[240px] sm:max-w-[320px] aspect-square rounded-2xl overflow-hidden border-4 border-amber-950/80 shadow-[0_12px_28px_rgba(0,0,0,0.55)] transform hover:scale-[1.02] transition-transform duration-300 relative group mx-auto">
                   <img
                     src={luffyCelebration}
                     className="w-full h-full object-cover"
@@ -1153,7 +1116,7 @@ export default function AnimeBirthdayShow() {
 
       {/* --- NAKAMA WANTED POSTER SCREEN (STATE: WANTED) --- */}
       {gameState === "wanted" && (
-        <div className="absolute inset-0 flex flex-col items-center justify-start sm:justify-center p-4 sm:p-6 z-20 overflow-y-auto custom-scrollbar pt-24 pb-16">
+        <div className="absolute inset-0 flex flex-col items-center justify-start sm:justify-center p-4 sm:p-6 z-20 overflow-y-auto custom-scrollbar pt-16 pb-12">
           {/* Confetti Rain & Fireworks Canvas */}
           <CanvasConfetti active={showConfetti} triggerFireworks={true} />
 
@@ -1185,7 +1148,7 @@ export default function AnimeBirthdayShow() {
             ref={wantedPosterRef}
             onMouseMove={(e) => handleMouseMoveTilt(e, wantedPosterRef)}
             onMouseLeave={() => handleMouseLeaveTilt(wantedPosterRef)}
-            className="wanted-poster-card animate-float select-none relative z-20 w-full max-w-[310px] sm:max-w-[400px] border-8 sm:border-[12px]"
+            className="wanted-poster-card animate-float select-none relative z-20 w-full max-w-[250px] xs:max-w-[300px] sm:max-w-[400px] border-8 sm:border-[12px]"
           >
             <div className="wanted-poster-title text-4xl sm:text-5xl">WANTED</div>
             <div className="wanted-poster-subtitle text-[10px] sm:text-xs">DEAD OR ALIVE</div>
