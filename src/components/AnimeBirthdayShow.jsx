@@ -855,7 +855,7 @@ export default function AnimeBirthdayShow() {
 
       {/* --- BIRTHDAY REVEAL SCREEN (STATE: REVEAL) --- */}
       {gameState === "reveal" && (
-        <div className="absolute inset-0 flex flex-col items-center justify-start sm:justify-center p-4 sm:p-6 z-20 overflow-y-auto custom-scrollbar pt-40 sm:pt-24 pb-12">
+        <div className="absolute inset-0 flex flex-col items-center justify-start sm:justify-center p-4 sm:p-6 z-20 overflow-y-auto custom-scrollbar pt-48 sm:pt-24 pb-12">
           
           {/* Confetti Rain Canvas */}
           <CanvasConfetti active={showConfetti} triggerFireworks={wishMade} />
@@ -917,11 +917,13 @@ export default function AnimeBirthdayShow() {
                     alt="Luffy celebrating with you!"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                  <div className="absolute bottom-0 left-0 right-0 bg-[#1a0f0d]/80 py-1.5 sm:py-2 text-center border-t border-[#8b6b32]/40 pointer-events-none">
-                    <span className="text-[10px] sm:text-xs font-black tracking-widest text-[#ffd54f] uppercase drop-shadow">
-                      ★ HAPPY BIRTHDAY JANU ★
-                    </span>
-                  </div>
+                </div>
+
+                {/* Calligraphy greeting text placed below the photo frame to prevent clipping */}
+                <div className="text-center my-1 select-none">
+                  <span className="calligraphy text-3xl sm:text-4xl block leading-tight">
+                    Happy Birthday Janu
+                  </span>
                 </div>
 
                 <div>
@@ -1106,7 +1108,7 @@ export default function AnimeBirthdayShow() {
 
       {/* --- NAKAMA WANTED POSTER SCREEN (STATE: WANTED) --- */}
       {gameState === "wanted" && (
-        <div className="absolute inset-0 flex flex-col items-center justify-start sm:justify-center p-4 sm:p-6 z-20 overflow-y-auto custom-scrollbar pt-40 sm:pt-24 pb-12">
+        <div className="absolute inset-0 flex flex-col items-center justify-start sm:justify-center p-4 sm:p-6 z-20 overflow-y-auto custom-scrollbar pt-48 sm:pt-24 pb-12">
           {/* Confetti Rain & Fireworks Canvas */}
           <CanvasConfetti active={showConfetti} triggerFireworks={true} />
 
